@@ -1,0 +1,174 @@
+
+game.png
+size: 1024,512
+format: RGBA4444
+filter: MipMapLinearLinear,MipMapLinearLinear
+repeat: none
+backMount
+  rotate: false
+  xy: 572, 353
+  size: 67, 27
+  orig: 67, 27
+  offset: 0, 0
+  index: -1
+backWheel
+  rotate: false
+  xy: 918, 444
+  size: 66, 66
+  orig: 66, 66
+  offset: 0, 0
+  index: -1
+bg
+  rotate: false
+  xy: 75, 2
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+bike-full
+  rotate: false
+  xy: 2, 72
+  size: 215, 180
+  orig: 215, 180
+  offset: 0, 0
+  index: -1
+bikeBody
+  rotate: false
+  xy: 572, 382
+  size: 188, 128
+  orig: 188, 128
+  offset: 0, 0
+  index: -1
+breakLine
+  rotate: false
+  xy: 762, 356
+  size: 154, 154
+  orig: 154, 154
+  offset: 0, 0
+  index: -1
+circle
+  rotate: false
+  xy: 219, 224
+  size: 28, 28
+  orig: 28, 28
+  offset: 0, 0
+  index: -1
+circle1
+  rotate: false
+  xy: 390, 222
+  size: 8, 8
+  orig: 8, 8
+  offset: 0, 0
+  index: -1
+cloud
+  rotate: false
+  xy: 260, 347
+  size: 310, 163
+  orig: 310, 163
+  offset: 0, 0
+  index: -1
+coin
+  rotate: false
+  xy: 524, 305
+  size: 40, 40
+  orig: 40, 40
+  offset: 0, 0
+  index: -1
+dirt
+  rotate: false
+  xy: 2, 254
+  size: 256, 256
+  orig: 256, 256
+  offset: 0, 0
+  index: -1
+finish
+  rotate: false
+  xy: 260, 217
+  size: 128, 128
+  orig: 128, 128
+  offset: 0, 0
+  index: -1
+frontCover
+  rotate: false
+  xy: 185, 55
+  size: 16, 15
+  orig: 16, 15
+  offset: 0, 0
+  index: -1
+frontWheel
+  rotate: false
+  xy: 390, 279
+  size: 66, 66
+  orig: 66, 66
+  offset: 0, 0
+  index: -1
+frountMount
+  rotate: false
+  xy: 2, 11
+  size: 71, 15
+  orig: 71, 15
+  offset: 0, 0
+  index: -1
+grass
+  rotate: false
+  xy: 918, 378
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+hand
+  rotate: false
+  xy: 390, 232
+  size: 47, 45
+  orig: 47, 45
+  offset: 0, 0
+  index: -1
+head
+  rotate: false
+  xy: 138, 34
+  size: 45, 36
+  orig: 45, 36
+  offset: 0, 0
+  index: -1
+killer
+  rotate: false
+  xy: 458, 281
+  size: 64, 64
+  orig: 64, 64
+  offset: 0, 0
+  index: -1
+pipe
+  rotate: false
+  xy: 2, 28
+  size: 134, 42
+  orig: 134, 42
+  offset: 0, 0
+  index: -1
+pipe-connector
+  rotate: false
+  xy: 986, 482
+  size: 28, 28
+  orig: 28, 28
+  offset: 0, 0
+  index: -1
+pipe-end
+  rotate: false
+  xy: 439, 247
+  size: 11, 30
+  orig: 11, 30
+  offset: 0, 0
+  index: -1
+sprocketCover
+  rotate: false
+  xy: 641, 353
+  size: 17, 27
+  orig: 17, 27
+  offset: 0, 0
+  index: -1
+square
+  rotate: false
+  xy: 918, 368
+  size: 64, 8
+  orig: 64, 8
+  offset: 0, 0
+  index: -1
