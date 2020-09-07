@@ -1,0 +1,531 @@
+<!DOCTYPE html>
+<html style="height: 100%">
+<head>
+<title></title>
+<script src=jq.js></script>
+<script src="kinetic-v4.7.4.min.js"></script>
+<!--<script src="dropzone.js"></script>-->
+<script>
+
+
+var VertexType = {
+    vertex: 49,
+    apple: 50,
+    killer: 51,
+    start: 52,
+    finish: 53
+
+}
+var map = {
+    polyLines: [],
+    killers: [],
+    apples: [],
+    start: new Vertex(100, 120),
+    finish: new Vertex(230, 120)
+};
+var polyLine;
+var totalScale = 1;
+var scaleRate = 1.1;
+var mouseDown = false;
+var dragging = false;
+var draggingVertex = null;
+var draggingCircle = null;
+var objectType = VertexType.vertex;
+var dbl = false;
+var lineJustFinished = false;
+
+function Vertex(x, y, collection) {
+    collection = collection || null;
+    this.collection = collection;
+    this.x = x;
+    this.y = y;
+    this.toJSON = function () {
+        return {x: Math.floor(this.x), y: -Math.floor(this.y)};
+    }
+}
+
+var drawMap;
+
+
+$(function () {
+    var container = $("#container");
+    var stage = new Kinetic.Stage({
+        container: 'container',
+        width: container.width(),
+        height: container.height()
+    });
+
+    var bgLayer = new Kinetic.Layer();
+    var bg = new Kinetic.Rect({
+        x: 0,
+        y: 0,
+        width: 2000,
+        height: 2000,
+        fill: '#EEEEFF',
+        stroke: '#EEEEFF',
+        strokeWidth: 4
+    });
+
+    bgLayer.add(bg);
+
+    stage.add(bgLayer);
+
+
+    var layer = new Kinetic.Layer();
+    stage.add(layer);
+
+    drawMap = function () {
+        console.log("draw map");
+        layer.removeChildren();
+        map.polyLines.forEach(function (island) {
+
+            addVertices(island, VertexType.vertex);
+
+        });
+        addVertices(map.apples, VertexType.apple);
+        addVertices(map.killers, VertexType.killer);
+        addCircle(map.start, VertexType.start, null);
+        addCircle(map.finish, VertexType.finish, null);
+    }
+
+    redrawMap();
+
+    bg.on('mousedown', function (evt) {
+        if (draggingVertex == null) {
+            mouseDown = true;
+        }
+
+    });
+    bg.on('mouseup', function (evt) {
+        mouseDown = false;
+        dragging = false;
+    });
+
+    bg.on('mousemove', function (evt) {
+        if (mouseDown && !dragging) {
+            //onsole.log("start drag");
+            layer.startDrag();
+            dragging = true;
+        }
+
+        if (draggingVertex != null) {
+            //onsole.log(draggingVertex);
+            draggingVertex.x = draggingCircle.attrs.x;
+            draggingVertex.y = draggingCircle.attrs.y;
+        }
+    });
+
+
+    function addVertex(vertex, islandPosition) {
+        var island = vertex.collection;
+        islandPosition = islandPosition || island.length;
+
+
+        link(island[islandPosition - 1], vertex);
+        link(vertex, island[islandPosition]);
+
+        island.splice(islandPosition, 0, vertex);
+        addCircle(vertex, VertexType.vertex);
+        //onsole.log(island,vertex);
+    }
+
+
+    function removeVertex(vertex, type) {
+        var island = vertex.collection;
+        var islandPosition = island.indexOf(vertex);
+        console.log("remove vertex");
+        console.log(vertex);
+        if (islandPosition < 0) {
+            islandPosition = island.length - 1;
+        }
+        island.splice(islandPosition, 1);
+
+        if (type == VertexType.vertex) {
+
+            link(island[islandPosition - 1], island[islandPosition]);
+            drawLines(vertex.previousVertex);
+            drawLines(vertex.nextVertex);
+
+            vertex.previousVertex = null;
+            vertex.nextVertex = null;
+
+            drawLines(vertex);
+        }
+
+        vertex.circle.remove();
+        layer.draw();
+    }
+
+    function pushVertex(vertex) {
+        vertex.collection = polyLine;
+        addVertex(vertex);
+    }
+
+    bg.on("click", function (e) {
+        dbl = true;
+        setTimeout(function () {
+            dbl = false;
+        }, 200);
+        console.log("click");
+        var position = getWorldClick();
+        var vertex = new Vertex(position.x, position.y);
+        console.log("add " + objectType);
+        switch (objectType) {
+            case  VertexType.vertex:
+                if (!polyLine) {
+                    polyLine = [];
+                    map.polyLines.push(polyLine);
+                }
+                var curPolyline = polyLine;
+                //setTimeout(function () {
+                if (curPolyline != polyLine) {
+                    return;
+                }
+                pushVertex(vertex);
+                layer.draw();
+                //}, 200);
+                break;
+            case VertexType.apple:
+                //onsole.log("add apple");
+                map.apples.push(vertex);
+                vertex.collection = map.apples;
+                addCircle(vertex, VertexType.apple);
+                break;
+            case VertexType.killer:
+                //onsole.log("add killer");
+                map.killers.push(vertex);
+                vertex.collection = map.killers;
+                addCircle(vertex, VertexType.killer);
+
+                break;
+
+        }
+        layer.draw();
+
+    });
+    function popVertex() {
+        removeVertex(polyLine[polyLine.length - 1]);
+    }
+
+//    bg.on("dblclick", function (e) {
+//        //removeVertex(polyLine);
+//
+//        //pushVertex(vertex);
+//        popVertex();
+//        endLine();
+//        return false;
+//    });
+
+    function endLine() {
+        console.log("End line");
+        polyLine = null;
+    }
+
+    function handleScroll(mouseEvent) {
+        scaleCanvas(scaleRate, mouseEvent);
+        return false;
+    }
+
+    container.bind("mousewheel DOMMouseScroll", handleScroll);
+    layer.setDraggable();
+
+
+    function scaleCanvas(factor, mouseEvent) {
+
+        var delta = (event.wheelDelta || -event.detail) > 0 ? 1 : -1;
+        factor = Math.pow(factor, delta);
+        totalScale *= factor;
+        layer.setScale(totalScale);
+        var mousePosition = stage.getPointerPosition();
+
+        layer.setPosition((layer.getPosition().x - mousePosition.x) * factor + mousePosition.x, (layer.getPosition().y - mousePosition.y) * factor + mousePosition.y);
+
+        layer.draw();
+    }
+
+    function redrawMap() {
+        drawMap();
+    }
+
+    function drawLine(vertex, previousVertex) {
+        if (!vertex) {
+            return;
+        }
+
+        if (vertex.line) {
+            vertex.line.remove();
+        }
+        if (!previousVertex) {
+            return;
+        }
+        //onsole.log("addLine");
+        //onsole.log(vertex);
+
+        var island = vertex.collection;
+
+        var line = new Kinetic.Line({
+            points: [vertex.x, vertex.y, previousVertex.x, previousVertex.y],
+            stroke: 'blue',
+            strokeWidth: 6,
+            lineCap: 'round',
+            lineJoin: 'round'
+        });
+
+        vertex.line = line;
+        line.vertex = vertex;
+
+        line.on("click", function (e) {
+            var finLine = line;
+            var finIsland = island;
+            console.log(finLine);
+            var pos = getWorldClick();
+            var newVertex = new Vertex(pos.x, pos.y, island);
+            var islandPosition = finIsland.indexOf(finLine.vertex);
+            addVertex(newVertex, islandPosition);
+            console.log("lineClick " + islandPosition);
+            e.cancelBubble = true;
+
+            layer.draw();
+            return false;
+        });
+
+        layer.add(line);
+
+        line.setZIndex(1);
+    }
+
+//    function drawIsland(island) {
+//        var previousVertex;
+//        island.forEach(function (vertex) {
+//
+//            if (previousVertex != null) {
+//                drawLine(previousVertex,vertex,island);
+//            }
+//            previousVertex = vertex;
+//        });
+//    }
+
+
+    function addVertices(collection, type) {
+        collection.forEach(function (vertex) {
+            //onsole.log(vertex);
+            addCircle(vertex, type, collection);
+        });
+    }
+
+    var drawLines = function (vertex) {
+        if (!vertex) {
+            return;
+        }
+        console.log("draw line:");
+        console.log(vertex);
+
+        drawLine(vertex, vertex.previousVertex);
+        drawLine(vertex.nextVertex, vertex);
+    };
+
+    function addCircle(vertex, type) {
+        var collection = vertex.collection;
+        var image;
+        var size = 30;
+        var sizeY;
+        switch (type) {
+            case VertexType.vertex:
+                image = 'circle.png';
+                size = 28;
+                break;
+            case VertexType.apple:
+                image = 'coin.png';
+                size = 40;
+                break;
+            case VertexType.killer:
+                image = 'killer.png';
+                size = 30;
+                break;
+            case VertexType.start:
+                image = 'bike.png';
+                size = 150;
+                sizeY = 130;
+                break;
+            case VertexType.finish:
+                image = 'finish.png';
+                size = 80;
+                break;
+        }
+
+        if (type == VertexType.vertex) {
+            drawLines(vertex);
+        }
+        var imageObj = new Image();
+        var circle;
+        imageObj.src = image;
+        imageObj.onload = function () {
+            circle = new Kinetic.Image({
+                x: vertex.x,
+                y: vertex.y,
+                offsetX: size / 2,
+                offsetY: size / 2,
+                width: size,
+                height: sizeY ? sizeY : size,
+                image: imageObj
+            });
+
+            vertex.circle = circle;
+
+            layer.add(circle);
+            circle.setZIndex(100);
+            circle.on("mousedown", function (e) {
+
+                e.cancelBubble = true;
+                if (collection != null) {
+                    if (e.shiftKey) {
+                        removeVertex(vertex, type);
+                        console.log("remove");
+
+                        return;
+                    }
+                }
+                moveVertex(circle, vertex);
+                return false;
+            });
+            circle.on("mouseup", function () {
+                stopMovingVertex()
+            });
+
+            circle.on("click", function (e) {
+                console.log("prevent click");
+                e.cancelBubble = true;
+                return false;
+            });
+            layer.draw();
+        };
+
+    }
+
+    function moveVertex(circle, vertex) {
+        if (dbl) {
+            lineJustFinished = true;
+            endLine();
+        }
+        console.log("move start");
+        circle.startDrag();
+        draggingVertex = vertex;
+        draggingCircle = circle;
+    }
+
+    function stopMovingVertex() {
+        console.log("move stop");
+        draggingCircle.stopDrag();
+        drawLines(draggingVertex);
+        layer.draw();
+        draggingVertex = null;
+        draggingCircle = null;
+    }
+
+    function getWorldClick() {
+        var worldX = (stage.getPointerPosition().x - layer.getPosition().x - stage.getPosition().x) / totalScale;
+        var worldY = (stage.getPointerPosition().y - layer.getPosition().y - stage.getPosition().y) / totalScale;
+        return {x: worldX, y: worldY};
+    }
+
+    window.addEventListener('keydown', function (e) {
+        var newObjectType = e.keyCode;
+        var vals = Object.keys(VertexType).map(function (key) {
+            return VertexType[key];
+        });
+        if (vals.indexOf(newObjectType) > -1) {
+            objectType = newObjectType;
+        }
+        if (e.keyCode == 88) {
+            endLine();
+        }
+    });
+// Setup the dnd listeners.
+    var dropZone = $("body")[0];
+    dropZone.addEventListener('dragover', handleDragOver, false);
+    dropZone.addEventListener('drop', handleFileSelect, false);
+
+    function handleFileSelect(evt) {
+        evt.stopPropagation();
+        evt.preventDefault();
+
+        var files = evt.dataTransfer.files; // FileList object.
+        //onsole.log(files);
+
+        // files is a FileList of File objects. List some properties.
+        var output = [];
+        for (var i = 0; i < files.length; i++) {
+            var f = files[i];
+            //onsole.log(f);
+            //onsole.log(i);
+            var r = new FileReader();
+            r.onload = function (e) {
+                var contents = e.target.result;
+                map = JSON.parse(contents);
+                prepareMap(map);
+                redrawMap();
+            }
+            r.readAsText(f);
+        }
+    }
+})
+;
+
+function link(vertex1, vertex2) {
+    if (vertex2) {
+        console.log("add backlink");
+        vertex2.previousVertex = vertex1;
+    }
+    if (vertex1) {
+        vertex1.nextVertex = vertex2;
+    }
+}
+
+function prepareMap(map) {
+    map.polyLines.forEach(function (island) {
+        convertToVertices(island);
+        for (var i = 0; i < island.length; i++) {
+            link(island[i], island[i + 1]);
+        }
+    });
+
+    convertToVertices(map.killers);
+    convertToVertices(map.apples);
+    map.start=new Vertex(map.start.x,-map.start.y);
+    map.finish=new Vertex(map.finish.x,-map.finish.y);
+
+    function convertToVertices(array) {
+        for (var i = 0; i < array.length; i++) {
+            array[i] = new Vertex(array[i].x, -array[i].y, array);
+        }
+    }
+
+    polyLine = null;
+}
+
+
+function download(filename, text) {
+    var pom = document.createElement('a');
+    pom.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+    pom.setAttribute('download', filename);
+    pom.click();
+}
+function exportMap() {
+    download("level.json", JSON.stringify(map));
+}
+
+
+function handleDragOver(evt) {
+    evt.stopPropagation();
+    evt.preventDefault();
+    evt.dataTransfer.dropEffect = 'copy'; // Explicitly show this is a copy.
+}
+
+
+</script>
+</head>
+<body style="height: 100%" class="dropzone">
+<button onclick="exportMap();">export</button>
+<div id=container style="width:100%;height: 100%;"></div>
+</body>
+</html>

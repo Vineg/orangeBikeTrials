@@ -1,0 +1,32 @@
+plugins {
+    // Apply the java plugin to add support for Java
+    id "java"
+
+    // Apply the application plugin to add support for building a CLI application.
+    id "application"
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs("../android/src/main/assets")
+        }
+    }
+}
+
+dependencies {
+    // Use JUnit test framework
+    testImplementation("junit:junit:4.13")
+    // https://mvnrepository.com/artifact/com.badlogicgames.gdx
+    implementation("com.badlogicgames.gdx:gdx-backend-lwjgl:1.5.4")
+    implementation("com.badlogicgames.gdx:gdx-tools:1.5.4")
+    implementation("com.badlogicgames.gdx:gdx-platform:1.5.4:natives-desktop")
+    implementation("com.badlogicgames.gdx:gdx-box2d-platform:1.5.4:natives-desktop")
+    implementation(project(":core"))
+    implementation(project(":common"))
+}
+
+application {
+    // Define the main class for the application.
+    mainClassName = "ru.vineg.orangeBikeFree.Main"
+}

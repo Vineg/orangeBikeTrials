@@ -1,0 +1,89 @@
+apply plugin: 'com.android.application'
+
+buildscript {
+    repositories {
+        jcenter()
+        google()
+        maven {
+            url "https://maven.google.com"
+        }
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.6.2'
+    }
+}
+
+android {
+    compileSdkVersion 26
+    buildToolsVersion "28.0.3"
+
+    defaultConfig {
+        applicationId "ru.vineg.orangeBikeFree"
+        minSdkVersion 5
+        targetSdkVersion 26
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    configurations { natives }
+
+    implementation("com.badlogicgames.gdx:gdx-backend-android:1.5.4")
+    natives("com.badlogicgames.gdx:gdx-platform:1.5.4:natives-x86")
+    natives("com.badlogicgames.gdx:gdx-box2d-platform:1.5.4:natives-x86")
+    natives("com.badlogicgames.gdx:gdx-platform:1.5.4:natives-armeabi")
+    natives("com.badlogicgames.gdx:gdx-box2d-platform:1.5.4:natives-armeabi")
+    natives("com.badlogicgames.gdx:gdx-platform:1.5.4:natives-armeabi-v7a")
+    natives("com.badlogicgames.gdx:gdx-box2d-platform:1.5.4:natives-armeabi-v7a")
+    implementation(project(":core"))
+    implementation(project(":common"))
+}
+
+task copyAndroidNatives() {
+    file("src/main/jniLibs/armeabi/").mkdirs();
+    file("src/main/jniLibs/armeabi-v7a/").mkdirs();
+    file("src/main/jniLibs/x86/").mkdirs();
+
+    configurations.natives.files.each { jar ->
+        def outputDir = null
+        if (jar.name.endsWith("natives-armeabi-v7a.jar")) outputDir = file("src/main/jniLibs/armeabi-v7a")
+        if (jar.name.endsWith("natives-armeabi.jar")) outputDir = file("src/main/jniLibs/armeabi")
+        if (jar.name.endsWith("natives-x86.jar")) outputDir = file("src/main/jniLibs/x86")
+        if (outputDir != null) {
+            copy {
+                from zipTree(jar)
+                into outputDir
+                include "*.so"
+            }
+        }
+    }
+}
+
+task run(type: Exec, dependsOn: 'installDebug') {
+    def path
+    def localProperties = project.file("../local.properties")
+    if (localProperties.exists()) {
+        Properties properties = new Properties()
+        localProperties.withInputStream { instr ->
+            properties.load(instr)
+        }
+        def sdkDir = properties.getProperty('sdk.dir')
+        if (sdkDir) {
+            path = sdkDir
+        } else {
+            path = "$System.env.ANDROID_HOME"
+        }
+    } else {
+        path = "$System.env.ANDROID_HOME"
+    }
+
+    def adb = path + "/platform-tools/adb"
+    commandLine "$adb", 'shell', 'am', 'start', '-n', 'ru.vineg.orangeBikeFree/.MainActivity'
+}
