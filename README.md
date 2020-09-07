@@ -1,6 +1,8 @@
 # Orange Bike Trials
 libgdx motorbike game
 
+<img src="https://github.com/Vineg/orangeBikeTrials/raw/master/android/assets-src/big-logo1.png" width=250 height=250 />
+
 running desktop version:
 cd into project directory and run
 
