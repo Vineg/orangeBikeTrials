@@ -10,3 +10,9 @@ cd into project directory and run
 
 android version is available here
 https://play.google.com/store/apps/details?id=ru.vineg.orangeBikeFree&hl=en
+
+`master` branch contains 2-nd version of the game with revisited graphics by 
+
+## Screenshots
+
+<img src="https://github.com/Vineg/orangeBikeTrialsAssets/raw/master/v2.png" height=380 />
