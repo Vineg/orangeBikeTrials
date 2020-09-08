@@ -15,4 +15,4 @@ https://play.google.com/store/apps/details?id=ru.vineg.orangeBikeFree&hl=en
 
 ## Screenshots
 
-<img src="https://github.com/Vineg/orangeBikeTrialsAssets/raw/master/v2.png" height=380 />
+<img src="https://github.com/Vineg/orangeBikeTrialsAssets/raw/master/v2.1.png" height=380 />
