@@ -11,7 +11,7 @@ cd into project directory and run
 android version is available here
 https://play.google.com/store/apps/details?id=ru.vineg.orangeBikeFree&hl=en
 
-`master` branch contains 2-nd version of the game with revisited graphics by 
+`master` branch contains 2-nd version of the game with revisited graphics by Dima Gumel
 
 ## Screenshots
 
